@@ -1,0 +1,57 @@
+#!/bin/bash -x
+
+max() {
+    awk 'BEGIN { max=0 }
+         $1 > max { max=$1 }
+         END { print max }'
+}
+
+backup_subdirs() {
+    for path in "$SOURCE_DIR"/*; do
+        if [[ ! -d $path ]]; then
+            continue
+        fi
+        $0 -s "$path" -t "$TARGET_DIR/$(basename "$path")" -D
+    done
+}
+
+backup_dir() {
+    st=$(find "$SOURCE_DIR" -type f -exec stat -c %Y '{}' ';'| max)
+    tt=$(find "$TARGET_DIR" -type f -exec stat -c %Y '{}' ';'| max)
+    if [[ $st -gt $tt ]]; then
+        fn="$(basename "$SOURCE_DIR")_$(date -u +%y%m%d)_$(date -u +%H%M).zip"
+        mkdir -p "$TARGET_DIR"
+        cd "$(dirname "$SOURCE_DIR")"
+        echo "Creating $TARGET_DIR/$fn"
+        zip -b /tmp -rq "$TARGET_DIR/$fn" "$(basename "$SOURCE_DIR")"
+        touch -d "@$st" "$TARGET_DIR/$fn"
+    fi
+    $(dirname $0)/prune-backups "$TARGET_DIR/*.zip"
+}
+
+backup_files() {
+    st=$(find "$SOURCE_DIR" -maxdepth 1 -type f -exec stat -c %Y '{}' ';'| max)
+    tt=$(find "$TARGET_DIR" -maxdepth 1 -type f -exec stat -c %Y '{}' ';'| max)
+    if [[ $st -gt $tt ]]; then
+        fn="$(basename "$SOURCE_DIR")_$(date -u +%y%m%d)_$(date -u +%H%M).zip"
+        mkdir -p "$TARGET_DIR"
+        cd "$(dirname "$SOURCE_DIR")"
+        echo "Creating $TARGET_DIR/$fn"
+        zip -b /tmp -Dq "$TARGET_DIR/$fn" "$(basename "$SOURCE_DIR")"/*
+        touch -d "@$st" "$TARGET_DIR/$fn"
+    fi
+    $(dirname $0)/prune-backups "$TARGET_DIR/*.zip"
+}
+
+while getopts "s:t:RDd" option; do
+    case $option in
+        s)  SOURCE_DIR="$OPTARG" ;;
+        t)  TARGET_DIR="$OPTARG" ;;
+        R)  MAIN_FUNC="backup_subdirs" ;;
+        D)  MAIN_FUNC="backup_dir" ;;
+        d)  MAIN_FUNC="backup_files" ;;
+        \?) exit 1 ;;
+    esac
+done
+
+$MAIN_FUNC

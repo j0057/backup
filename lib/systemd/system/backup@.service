@@ -1,0 +1,5 @@
+[Service]
+# You MUST override User and ExecStart. The name of the instance (%i) is not used.
+User =
+ExecStart = /usr/local/bin/backup-dir ...
+Type = oneshot
