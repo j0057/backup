@@ -1,5 +1,6 @@
 [Service]
 # You MUST override User and ExecStart. The name of the instance (%i) is not used.
 User =
+# Options -- -R: backup subdirectories ; -s: backup one directory ; -t: target directory
 ExecStart = /usr/local/bin/backup-dir ...
 Type = oneshot
