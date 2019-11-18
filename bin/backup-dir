@@ -26,7 +26,7 @@ backup_dir() {
         zip -b /tmp -rq "$TARGET_DIR/$fn" "$(basename "$SOURCE_DIR")"
         touch -d "@$st" "$TARGET_DIR/$fn"
     fi
-    $(dirname $0)/prune-backups -v "$TARGET_DIR/*.zip"
+    $(dirname $0)/prune-backups -v "$TARGET_DIR/*.zip" | sed "s!^!$TARGET_DIR: !"
 }
 
 backup_files() {
@@ -40,7 +40,7 @@ backup_files() {
         zip -b /tmp -Dq "$TARGET_DIR/$fn" "$(basename "$SOURCE_DIR")"/*
         touch -d "@$st" "$TARGET_DIR/$fn"
     fi
-    $(dirname $0)/prune-backups -v "$TARGET_DIR/*.zip"
+    $(dirname $0)/prune-backups -v "$TARGET_DIR/*.zip" | sed "s!^!$TARGET_DIR: !"
 }
 
 while getopts "s:t:RDd" option; do
