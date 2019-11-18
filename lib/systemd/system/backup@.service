@@ -1,6 +1,8 @@
 [Service]
 # You MUST override User and ExecStart. The name of the instance (%i) is not used.
-User =
+User = root
 # Options -- -R: backup subdirectories ; -s: backup one directory ; -t: target directory
 ExecStart = /usr/local/bin/backup-dir ...
 Type = oneshot
+# Set to 1 to actually delete old backups
+Environment = PRUNE_FORCE=0
